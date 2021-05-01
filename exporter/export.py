@@ -2,7 +2,7 @@ import importlib
 from exporter import base
 
 
-def save(data: dict) -> int:
+def save(data: dict) -> bool:
     module = importlib.import_module('exporter.' + data['name'])
     class_ = getattr(module, data['name'].title())
     exporter = class_()
