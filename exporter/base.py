@@ -5,5 +5,5 @@ class Export(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def execute(self):
+    def execute(self, data: dict):
         raise NotImplementedError('Base method should be implemented')
