@@ -100,4 +100,4 @@ def write_xml(root_node, filename):
         tree.write(filename, pretty_print=True, encoding='utf-8', xml_declaration=True)
 
     except Exception as e:
-        print(e)
+        print(f'error writing file: {e}')

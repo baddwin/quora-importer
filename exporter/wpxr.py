@@ -38,27 +38,34 @@ class Wpxr(Export):
 
         # todo loop
         # Adding a picture
-        # logo_url = "https://domain.tld/path/to/picture.jpg"
-        # logo_item = create_item_node(
-        #         parent=channel,
-        #         post_id="{0}".format(10),
-        #         title="logo",
-        #         link=logo_url,
-        #         post_name="logo",
-        #         status="publish",
-        #         post_type="attachment",
-        #         date=date_local,
-        #         date_gmt=date_gmt)
-        #
-        # logo_path = "{0}/{1}/{2}".format('2020', '04', "picture")
-        # create_text_node(logo_item, WP + "attachment_url", CDATA(logo_url))
-        # create_post_meta_node(logo_item, "_wp_attached_file", logo_path)
-        # guid = ET.SubElement(logo_item, "guid", isPermalink="false")
-        # guid.text = logo_url
+        post_id = 1
+        for images in html['images']:
+            date = parser.parse(images['date'], tzinfos={"PDT": "UTC-7"})
+            date_local = date.astimezone(tzoffset('WIB', 7 * 3600))  # todo choice
+            date_gmt = date.astimezone(tzoffset(None, 0)).strftime('%Y-%m-%d %H:%M:%S')
+            img_url = images['url']
+            img_item = create_item_node(
+                    parent=channel,
+                    post_id="{0}".format(post_id),
+                    title=images['name'],
+                    link=img_url,
+                    post_name=images['name'],
+                    status="publish",
+                    post_type="attachment",
+                    date=date_local.strftime('%Y-%m-%d %H:%M:%S'),
+                    date_gmt=date_gmt)
+
+            # logo_path = "{0}/{1}/{2}".format('2020', '04', "picture")
+            img_path = "{0}/{1}/{2}".format(date_local.year, date_local.month, images['name'])
+            create_text_node(img_item, WP + "attachment_url", CDATA(img_url))
+            create_post_meta_node(img_item, "_wp_attached_file", img_path)
+            guid = ET.SubElement(img_item, "guid", isPermalink="true")
+            guid.text = img_url
+            post_id += 1
 
         # Adding a post
-        post_id = 1
-        for content in html:
+        # post_id = 1
+        for content in html['html']:
             date = parser.parse(content['Creation time'], tzinfos={"PDT": "UTC-7"})
             date_local = date.astimezone(tzoffset('WIB', 7 * 3600)).strftime('%Y-%m-%d %H:%M:%S')  # todo choice
             date_gmt = date.astimezone(tzoffset(None, 0)).strftime('%Y-%m-%d %H:%M:%S')
