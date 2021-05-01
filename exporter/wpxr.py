@@ -1,5 +1,4 @@
 import os
-from bs4.element import PageElement
 
 from exporter.base import Export
 # Import LXML to manipulate XML files
@@ -21,7 +20,7 @@ from exporter.wxr_utils import create_post_meta_node
 from exporter.wxr_utils import serialize_array
 from exporter.wxr_utils import write_xml
 
-HOME_ROOT = "https://domainku.tld"
+BASE_URL = 'https://id.quora.com'
 
 
 class Wpxr(Export):
@@ -31,11 +30,11 @@ class Wpxr(Export):
         html = data['html']
 
         # FILENAME = "output/wp.xml"
-        filename = os.path.join(data['path'], 'wp.xml')
+        filename = os.path.join(data['path'], 'wp.xml')  # todo name with timestamp
         # Creates the <rss> root node
         root = create_root_node()
         # Creates the <channel> node and fills the website's information
-        channel = create_channel_node(root, 'My awesome website', HOME_ROOT, 'id_ID')
+        channel = create_channel_node(root, 'My Posts from Quora', BASE_URL, 'id_ID')
 
         # todo loop
         # Adding a picture
@@ -57,29 +56,33 @@ class Wpxr(Export):
         # guid = ET.SubElement(logo_item, "guid", isPermalink="false")
         # guid.text = logo_url
 
-        # todo loop
         # Adding a post
+        post_id = 1
         for content in html:
-            date = parser.parse(content['Creation time:'], tzinfos={"PDT": "UTC-7"})
-            date_local = date.astimezone(tzoffset('WIB', 7 * 3600)).strftime('%Y-%m-%d %H:%M:%S')
+            date = parser.parse(content['Creation time'], tzinfos={"PDT": "UTC-7"})
+            date_local = date.astimezone(tzoffset('WIB', 7 * 3600)).strftime('%Y-%m-%d %H:%M:%S')  # todo choice
             date_gmt = date.astimezone(tzoffset(None, 0)).strftime('%Y-%m-%d %H:%M:%S')
-            slug = "my-article" # todo
+            # slug = slugify(content['Question'], lowercase=False)
+            slug = super().get_slug(content['Question'])
             item = create_item_node(
                     parent=channel,
-                    post_id="{0}".format(11),
-                    title=content['Question:'],
-                    link="{0}/{1}".format(HOME_ROOT, slug),
+                    post_id="{0}".format(post_id),
+                    title=content['Question'],
+                    link="{0}/{1}".format(BASE_URL, slug),
                     post_name=slug,
-                    status="draft",
+                    status="pending",
                     post_type="post",
                     date=date_local,
                     date_gmt=date_gmt)
-            artikel = ''
-            for konten in content['Content:']:
+            artikel, excerpt = '', ''
+            for konten in content['Content']:
                 artikel += str(konten)
+                if not excerpt:
+                    excerpt = konten.text
 
             create_text_node(item, CONTENT + "encoded", CDATA(artikel))
-            # create_text_node(item, EXCERPT + "encoded", CDATA("<p>Article excerpt</p>")) # todo trim subset
+            create_text_node(item, EXCERPT + "encoded", CDATA(excerpt))
+            post_id += 1
 
         # todo loop
         # Adding a category to the post

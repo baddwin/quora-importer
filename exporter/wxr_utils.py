@@ -1,12 +1,12 @@
 """Utility functions to create a WXR file for Wordpress.
+(c) axeleroy
+https://gist.github.com/axeleroy/b5bfe66c365c5d70fdaeb6d9845411cb
 """
 
-import datetime
 import os
 
 from lxml import etree as ET
 from lxml.etree import CDATA
-from dateutil.tz import tzoffset
 
 # XML namespaces declarations
 DC_NS = "http://purl.org/dc/elements/1.1/"

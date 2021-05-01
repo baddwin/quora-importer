@@ -1,4 +1,5 @@
 import os.path
+import traceback
 
 from bs4 import BeautifulSoup
 from exporter import export
@@ -15,15 +16,13 @@ def get_data(content_dir: str) -> list:
             divs = inner.find_all(name='div')
             for div in divs:
                 if div.strong is not None:
-                    text = div.strong.string.strip()
-                    judul = ['Question:', 'Content:', 'Creation time:']
+                    text = div.strong.string.replace(':', '').rstrip()
+                    judul = ['Question', 'Content', 'Creation time']
                     if text in judul:
-                        contents = div.span.contents
-                        if len(contents) > 1:
+                        if text == judul[1]:
                             content[text] = div.span.contents
                         else:
                             content[text] = div.span.text
-                    # print(f'Isi: \n{div.strong.string}')
 
                 # elif 'ui_qtext_image' in div.attrs['class'][0]:
                 #     print('Gambar:')
@@ -32,7 +31,7 @@ def get_data(content_dir: str) -> list:
                 # print(f'\t{div}')
             # print('==========================================')
             result.append(content)
-            # break
+            break
 
         html.close()
 
@@ -48,4 +47,5 @@ def process_data(extype: str, inpath: str, outpath: str) -> bool:
 
     except Exception as e:
         print(e)
+        traceback.print_exc()
         return False
